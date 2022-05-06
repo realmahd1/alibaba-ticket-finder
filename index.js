@@ -5,8 +5,7 @@ const sentry = new Webhook(process.env.DISCORD_WEBHOOK_URL);
 
 const ticketFinder = async () => {
     const browser = await puppeteer.launch({
-        headless: true, executablePath:
-            'C:/Program Files/Google/Chrome/Application/chrome.exe'
+        headless: true, executablePath: process.env.CHROME_PATH
     });
     const page = await browser.newPage();
     await page.goto(process.env.ALIBABA_URL); // https://www.alibaba.ir/bus/###-###?departing=####-##-##

@@ -12,3 +12,4 @@ To run this project, you will need to add the following environment variables to
 
 `ALIBABA_URL = https://www.alibaba.ir/bus/###-###?departing=####-##-##`
 
+`CHROME_PATH = ########/chrome.exe`
