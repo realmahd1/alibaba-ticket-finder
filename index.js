@@ -3,7 +3,7 @@ const { Webhook, MessageBuilder } = require('discord-webhook-node');
 const puppeteer = require('puppeteer');
 const locateChrome = require('locate-chrome');
 
-const sentry = new Webhook('linkurl');
+const sentry = new Webhook('url-webhook');
 
 const extractTicketPart = (url) => {
   const regex = /\/([A-Z]{3}-[A-Z]{3})/;
@@ -28,6 +28,26 @@ const getDepartingDate = (url) => {
   const match = url.match(regex);
   return match ? match[1] : 'Unknown';
 };
+
+const getSeatsCount = ($, url) => {
+  const classSelector1 = '.text-grays-400.text-2.mt-2';
+  const classSelector2 = url.includes('flights') ? '.text-2.mt-1.text-danger-400' : '.mt-2.text-2.text-danger-400';
+  const elements1 = $(classSelector1);
+  const elements2 = $(classSelector2);
+  const elements = elements1.add(elements2);
+  let count = 0;
+
+  elements.each((index, element) => {
+    const text = $(element).text().trim();
+    const number = parseInt(text);
+    if (!isNaN(number)) {
+      count += number;
+    }
+  });
+
+  return count;
+};
+
 
 const ticketFinder = async (urls) => {
   const executablePath = await locateChrome();
@@ -79,12 +99,13 @@ const ticketFinder = async (urls) => {
         const ticketPart = extractTicketPart(url);
         const departingDate = getDepartingDate(url);
         const title = `${getTransportationType(url)} Ticket Alert (${ticketPart}) - ${departingDate}`;
-
         const embed = new MessageBuilder()
           .setTitle(title)
+          .setURL(url)
           .setColor('#00b0f4')
-          .addField('Ticket Count', `✉️ ${ticketCount}`)
-
+          .addField('✉️ Available Number ', ` ${ticketCount}`, true)
+          .addField('🪑 Available Seats Count', ` ${getSeatsCount($, url)}`, true, url.includes('flights'));
+      
         sentry.send(embed);
       } else if (ticketCount === 0) {
         const ticketPart = extractTicketPart(url);
@@ -93,6 +114,7 @@ const ticketFinder = async (urls) => {
 
         const embed = new MessageBuilder()
           .setTitle(title)
+          .setURL(url)
           .setColor('#ff0000')
           .setDescription(`🔴 No tickets available for ${ticketPart}`);
 
