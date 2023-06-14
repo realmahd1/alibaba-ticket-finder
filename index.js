@@ -3,7 +3,7 @@ const { Webhook, MessageBuilder } = require('discord-webhook-node');
 const puppeteer = require('puppeteer');
 const locateChrome = require('locate-chrome');
 
-const sentry = new Webhook('');
+const sentry = new Webhook('linkurl');
 
 const extractTicketPart = (url) => {
   const regex = /\/([A-Z]{3}-[A-Z]{3})/;
@@ -14,7 +14,7 @@ const extractTicketPart = (url) => {
 const getTransportationType = (url) => {
   if (url.includes('bus')) {
     return '🚌 Bus';
-  } else if (url.includes('plane')) {
+  } else if (url.includes('flights')) {
     return '✈️ Plane';
   } else if (url.includes('train')) {
     return '🚂 Train';
@@ -42,8 +42,38 @@ const ticketFinder = async (urls) => {
 
       const html = await page.content();
       const $ = cheerio.load(html);
-      const ticketText = 'انتخاب بلیط';
-      const ticketCount = html.split(ticketText).length - 1;
+      let ticketText = 'انتخاب بلیط';
+      let ignoreText = 'پرواز های تکمیل ظرفیت';
+      if (url.includes('flights')) {
+        ticketText = 'انتخاب پرواز';
+        ignoreText = 'پرواز های تکمیل ظرفیت';
+      }
+      
+      const disabledButtons = $('button.is-disabled:contains("انتخاب پرواز")');
+      const disabledCount = disabledButtons.length;
+      
+      const ticketCount = html.split(ticketText).length - 1 - disabledCount;
+      
+      let availableCount = 0;
+      if (ticketCount > 0) {
+        const ticketsParent = $('#app > div.wrapper > main > div > div > section');
+        const availableCards = ticketsParent.children().nextAll('.available-card');
+        availableCount = availableCards.length;
+
+        // Ignore 'انتخاب پرواز' after 'پرواز های تکمیل ظرفیت'
+        let ignore = false;
+        availableCards.each((index, element) => {
+          const cardText = $(element).text();
+          const h3Element = $(element).find('h3');
+          const h3Text = h3Element.text().trim();
+          if (h3Text === ignoreText) {
+            ignore = true;
+          }
+          if (!ignore) {
+            availableCount++;
+          }
+        });
+      }
 
       if (ticketCount > 0) {
         const ticketPart = extractTicketPart(url);
@@ -53,10 +83,10 @@ const ticketFinder = async (urls) => {
         const embed = new MessageBuilder()
           .setTitle(title)
           .setColor('#00b0f4')
-          .addField('Ticket Count', `✉️ ${ticketCount}`);
+          .addField('Ticket Count', `✉️ ${ticketCount}`)
 
         sentry.send(embed);
-      } else if (ticketCount = 0) {
+      } else if (ticketCount === 0) {
         const ticketPart = extractTicketPart(url);
         const departingDate = getDepartingDate(url);
         const title = `${getTransportationType(url)} Ticket Alert (${ticketPart}) - ${departingDate}`;
@@ -80,8 +110,7 @@ const ticketFinder = async (urls) => {
 
 // Example usage with multiple URLs
 const urls = [
-  'example1',
-  'example2'
+  'example1'
 ];
 
 setInterval(() => {
