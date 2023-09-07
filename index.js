@@ -132,7 +132,7 @@ const ticketFinder = async (urls) => {
 
 // Example usage with multiple URLs
 const urls = [
-  'https://www.alibaba.ir/bus/MHD-KER?departing=1402-06-17'
+  'example.com'
 ];
 
 setInterval(() => {
