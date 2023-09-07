@@ -68,12 +68,12 @@ const ticketFinder = async (urls) => {
         ticketText = 'انتخاب پرواز';
         ignoreText = 'پرواز های تکمیل ظرفیت';
       }
-      
+
       const disabledButtons = $('button.is-disabled:contains("انتخاب پرواز")');
       const disabledCount = disabledButtons.length;
-      
+
       const ticketCount = html.split(ticketText).length - 1 - disabledCount;
-      
+
       let availableCount = 0;
       if (ticketCount > 0) {
         const ticketsParent = $('#app > div.wrapper > main > div > div > section');
@@ -105,7 +105,7 @@ const ticketFinder = async (urls) => {
           .setColor('#00b0f4')
           .addField('✉️ Available Number ', ` ${ticketCount}`, true)
           .addField('🪑 Available Seats Count', ` ${getSeatsCount($, url)}`, true, url.includes('flights'));
-      
+
         sentry.send(embed);
       } else if (ticketCount === 0) {
         const ticketPart = extractTicketPart(url);
