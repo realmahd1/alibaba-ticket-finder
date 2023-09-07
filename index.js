@@ -2,8 +2,8 @@ const cheerio = require('cheerio');
 const { Webhook, MessageBuilder } = require('discord-webhook-node');
 const puppeteer = require('puppeteer');
 const locateChrome = require('locate-chrome');
-
-const sentry = new Webhook('url-webhook');
+require('dotenv').config()
+const sentry = new Webhook(process.env.DISCORD_WEBHOOK_URL);
 
 const extractTicketPart = (url) => {
   const regex = /\/([A-Z]{3}-[A-Z]{3})/;
@@ -132,7 +132,7 @@ const ticketFinder = async (urls) => {
 
 // Example usage with multiple URLs
 const urls = [
-  'example1'
+  'https://www.alibaba.ir/bus/MHD-KER?departing=1402-06-17'
 ];
 
 setInterval(() => {

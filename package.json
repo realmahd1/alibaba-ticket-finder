@@ -12,6 +12,7 @@
     "axios": "^0.27.2",
     "cheerio": "*",
     "discord-webhook-node": "^1.1.8",
+    "dotenv": "^16.3.1",
     "locate-chrome": "^0.1.1",
     "puppeteer": "^13.7.0"
   }
